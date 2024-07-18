@@ -1,0 +1,572 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+@inject UserManager<ApplicationUser> UserManager
+
+@* <div class="row align-items-center mb-4">
+    <div class="col-md-8 align-items-center">
+        <div class="py-3">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search...">
+                <button class="btn btn-outline-secondary" type="button"><i class="fa fa-search" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 align-items-center">
+        <div class="p-3 text-right">
+            <i class="fa fa-filter" aria-hidden="true"></i>
+        </div>
+    </div>
+</div> *@
+
+<div class="row dashboard-content">
+
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">
+                        Test
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">
+                        Test
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">
+                        Test
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">
+                        Test
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- 80% - 20% Section -->
+    <div class="row mb-3">
+        <!-- 80% Content -->
+        <div class="border">
+
+            <div class="row g-3">
+
+                <div class="col-md-8">
+
+                    <!-- Azure Maps Control -->
+                    <div id="locator-map" role="application" class="w-100 h-100 bg-light border rounded" style="min-height: 600px;">
+                        <template id="template-storepopup">
+                            <div class="col">
+                                <div class="card shadow-sm" style="width: 18rem;">
+                                    <img class="card-img-top" src="{imageUrl}" alt="{title}">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-wrap">{name}</h5>
+                                        <p class="card-text text-wrap">{address}, {city}, {countryName}</p>
+                                        <p class="card-text">{distanceInKm} km</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                <a href="/stores/details/{id}" class="btn btn-sm btn-primary" role="button">
+                                                    <small>Details</small>
+                                                </a>
+                                            </div>
+                                            <div class="btn-group">
+                                                <a target="_blank" href="{directionsUrl}" class="btn btn-sm btn-secondary" role="button">
+                                                    <small>Directions</small>
+                                                </a>
+                                            </div>
+                                            <div class="btn-group">
+                                                <a target="_blank" href="{webUrl}" class="btn btn-sm btn-secondary" role="button">
+                                                    <small>Website</small>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <!-- Search for a location -->
+                    <div class="input-group">
+                        <input id="locator-search" type="search" autocomplete="off" class="form-control shadow-none" placeholder="Search for a store, place or address" aria-label="Search">
+                        <button type="button" class="btn btn-outline-secondary" onclick="locator.startSpeechRecognitionClicked(this)" aria-label="Speech recognition">
+                            <i class="bi bi-mic"></i>
+                        </button>
+
+
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#filters" aria-controls="filters" aria-label="Filters">
+                            <i class="bi bi-sliders"></i>
+                        </button>
+                    </div>
+
+                    <!-- Autocomplete dropdown -->
+                    <ul id="locator-autocomplete" class="dropdown-menu">
+                        <template id="template-autocomplete-locateMe">
+                            <li>
+                                <a href="#" class="dropdown-item d-flex gap-3" onclick="locator.locateMe()">
+                                    <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Use my current location</h6>
+                                </a>
+                            </li>
+                        </template>
+                        <template id="template-autocomplete-locations">
+                            <li>
+                                <a href="#" class="dropdown-item d-flex gap-3 py-3" onclick="locator.searchClicked('{id}')">
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                        <div>
+                                            <h6 class="mb-0">{name}</h6>
+                                            <p class="mb-0 opacity-75">{description}</p>
+                                        </div>
+                                    </div>
+                                    <i class="bi {icon} opacity-50"></i>
+                                </a>
+                            </li>
+                        </template>
+                        <template id="template-autocomplete-stores">
+                            <li>
+                                <a href="/stores/details/{id}" class="dropdown-item d-flex gap-3 py-3">
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                        <div>
+                                            <h6 class="mb-0">{name}</h6>
+                                            <p class="mb-0 opacity-75">{address}, {city}</p>
+                                        </div>
+                                    </div>
+                                    <i class="bi bi-shop opacity-50"></i>
+                                </a>
+                            </li>
+                        </template>
+                    </ul>
+
+                    <!-- Filter stores by tags -->
+                    <div class="offcanvas offcanvas-start" tabindex="-1" id="filters" aria-labelledby="filter-label">
+                        <div class="offcanvas-header">
+                            <h5 class="offcanvas-title" id="filter-label">Search Filters</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                        <div class="offcanvas-body p-0">
+                            <div class="d-flex flex-align-start flex-column">
+                                <div class="h-100 mb-auto overflow-y-auto p-3">
+                                    <div>
+                                        <label for="customRange2" class="form-label">Range Distance: </label><h3><label class="form-label" id="rangeText">5 KM</label></h3>
+                                        <input type="range" class="form-range" min="0" max="20" value="5" onchange="updateTextInput(this.value);" id="customRange2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-align-start flex-column h-100">
+                                <div class="h-100 mb-auto overflow-y-auto p-3">
+                                    <div>
+                                        Please select one or more features you would like to use as filters.
+                                    </div>
+
+
+                                    <ul id="locator-filters" class="list-unstyled ps-0">
+
+                                        <li class="border-top my-3"></li>
+
+                                        <template id="template-filters-category">
+                                            <li class="mb-1">
+                                                <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#filter-{id}" aria-expanded="{expanded}">
+                                                    {name}
+                                                </button>
+                                                <div class="collapse {show}" id="filter-{id}">
+                                                    <div class="list-group list-group-flush">
+                                                        {subCategory}
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </template>
+
+                                        <template id="template-filters-tag">
+                                            <label class="list-group-item d-flex gap-2">
+                                                <input class="form-check-input flex-shrink-0" type="checkbox" checked="checked" value="{id}" onchange="locator.handleFilterChange(this)">
+                                                <span>{name}</span>
+                                            </label>
+                                        </template>
+
+                                    </ul>
+                                </div>
+
+                                <div class="d-flex flex-align-end bg-light">
+                                    <div class="d-flex justify-content-end p-3 w-100">
+                                        <button type="button" data-bs-toggle="offcanvas" onclick="locator.searchFiltersClicked()" class="btn btn-primary">Search</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Nearby store results -->
+                    <div id="locator-results" class="list-group mt-3">
+                        <template id="template-results">
+                            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" onclick="editOrderMethod({orderId});">
+                                <i class="ti ti-pizza" style="font-size: 2rem; color: mediumseagreen;"></i>
+                                <div class="d-flex gap-2 w-100 justify-content-between">
+                                    <div>
+                                        <h6 class="mb-0">{city}, {countryName}</h6>
+                                        <p class="mb-0 opacity-75">{orderId}</p>
+                                    </div>
+                                    <small class="opacity-50 text-nowrap">{distanceInKm} km</small>
+                                </div>
+                            </a>
+                        </template>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 d-flex align-items-stretch">
+            <div class="card w-100">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h5 class="card-title fw-semibold">Recent Transactions</h5>
+                    </div>
+                    <ul class="timeline-widget mb-0 position-relative mb-n5">
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">09:30</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-primary flex-shrink-0 my-8"></span>
+                                <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1">Payment received from John Doe of $385.90</div>
+                        </li>
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">10:00 am</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-info flex-shrink-0 my-8"></span>
+                                <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1 fw-semibold">
+                                New sale recorded <a href="javascript:void(0)" class="text-primary d-block fw-normal">#ML-3467</a>
+                            </div>
+                        </li>
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">12:00 am</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-success flex-shrink-0 my-8"></span>
+                                <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1">Payment was made of $64.95 to Michael</div>
+                        </li>
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">09:30 am</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-warning flex-shrink-0 my-8"></span>
+                                <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1 fw-semibold">
+                                New sale recorded <a href="javascript:void(0)" class="text-primary d-block fw-normal">#ML-3467</a>
+                            </div>
+                        </li>
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">09:30 am</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-danger flex-shrink-0 my-8"></span>
+                                <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1 fw-semibold">
+                                New arrival recorded
+                            </div>
+                        </li>
+                        <li class="timeline-item d-flex position-relative overflow-hidden">
+                            <div class="timeline-time text-dark flex-shrink-0 text-end">12:00 am</div>
+                            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <span class="timeline-badge border-2 border border-success flex-shrink-0 my-8"></span>
+                            </div>
+                            <div class="timeline-desc fs-3 text-dark mt-n1">Payment Done</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 d-flex align-items-stretch">
+            <div class="card w-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-semibold mb-4">Recent Transactions</h5>
+                    <div class="table-responsive">
+                        <table class="table text-nowrap mb-0 align-middle">
+                            <thead class="text-dark fs-4">
+                                <tr>
+                                    <th class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0">Id</h6>
+                                    </th>
+                                    <th class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0">Assigned</h6>
+                                    </th>
+                                    <th class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0">Name</h6>
+                                    </th>
+                                    <th class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0">Priority</h6>
+                                    </th>
+                                    <th class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0">Budget</h6>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">1</h6></td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-1">Sunil Joshi</h6>
+                                        <span class="fw-normal">Web Designer</span>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p class="mb-0 fw-normal">Elite Admin</p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary rounded-3 fw-semibold">Low</span>
+                                        </div>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0 fs-4">$3.9</h6>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">2</h6></td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-1">Andrew McDownland</h6>
+                                        <span class="fw-normal">Project Manager</span>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p class="mb-0 fw-normal">Real Homes WP Theme</p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-secondary rounded-3 fw-semibold">Medium</span>
+                                        </div>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0 fs-4">$24.5k</h6>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">3</h6></td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-1">Christopher Jamil</h6>
+                                        <span class="fw-normal">Project Manager</span>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p class="mb-0 fw-normal">MedicalPro WP Theme</p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-danger rounded-3 fw-semibold">High</span>
+                                        </div>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0 fs-4">$12.8k</h6>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">4</h6></td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-1">Nirav Joshi</h6>
+                                        <span class="fw-normal">Frontend Engineer</span>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p class="mb-0 fw-normal">Hosting Press HTML</p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-success rounded-3 fw-semibold">Critical</span>
+                                        </div>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <h6 class="fw-semibold mb-0 fs-4">$2.4k</h6>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a id="createNewOrder" href="javascript:return true" class="float">
+    <i class="ti ti-plus my-float"></i>
+</a>
+
+@section stylesheets {
+    <!-- Azure Maps Map Control stylesheet -->
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" crossorigin="anonymous">
+
+    <!-- Custom style for the filters -->
+    <link rel="stylesheet" href="/css/btn-toggle.min.css">
+
+    <style>
+        .float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #0C9;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            box-shadow: 2px 2px 3px #999;
+        }
+
+        .my-float {
+            margin-top: 22px;
+            font-size: 55px;
+            font-weight: 900;
+        }
+
+        .fade.in {
+            opacity: .75;
+            background-color: #000;
+        }
+
+        .modal-backdrop, .modal-backdrop.fade.in {
+            opacity: 0.7;
+            z-index: -3;
+            filter: alpha(opacity=70);
+            background: #fff;
+        }
+    </style>
+}
+
+@section scripts {
+    <!-- Azure Maps Map Control script -->
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js" crossorigin="anonymous"></script>
+
+    <!-- Add the Azure Maps Order Locator script to the page. -->
+    <!-- https://github.com/Azure-Samples/Azure-Maps-Locator -->
+    <script src="/js/map-locator.js"></script>
+
+    <script>
+        function updateTextInput(val) {
+            $('#rangeText').text(val + 'KM');
+        }
+
+        // $(function () {
+        //     $('#editOrderModal').modal();
+        // });
+
+        $(document).ready(function () {
+
+            $('#createNewOrder').on('click', function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '/Order/Create',
+                    success: function (data) {
+                        $('#modalWrapper').html(data);
+
+                        $("#modalWrapper").show();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error creating order:', error);
+                    }
+                });
+            });
+        });
+
+        function editOrderMethod(orderId) {
+            // $.ajax({
+            //     url: '/Order/Create/' + orderId,
+            //     success: function (data) {
+            //         $('#editOrderModal').html(data);
+            //     }
+            // });
+
+            $.ajax({
+                url: '/Order/Edit?orderId=' + orderId,
+                success: function (data) {
+                    $('#modalWrapper').html(data);
+
+                    $("#modalWrapper").show();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error creating order:', error);
+                }
+            });
+        }
+
+        // Azure Maps Store Locator instance.
+        var locator = null;
+
+        if (locator == null) {
+            // Initialize an Azure Maps instance
+            var map = new atlas.Map('locator-map', {
+                zoom: 13,
+                // center: [10.73874, 59.91382],
+                // [Longitude, Latitude]
+                center: [120.5977658018935, 16.391806379693474],
+                style: 'grayscale_light',
+                view: 'Auto',
+
+                // Add authentication details for connecting to Azure Maps
+                authType: 'subscriptionKey',
+                subscriptionKey: 'KJtvYv_27lQIaLVDjfRpzd-P7fDJ4HV1uLxRLOO7WvE'
+            });
+        }
+
+
+        // Wait until the map resources are ready.
+        map.events.add('ready', () => {
+            // Add controls to the map.
+            map.controls.add([
+                new atlas.control.ZoomControl(),
+                new atlas.control.StyleControl({
+                    mapStyles: ['road', 'satellite', 'satellite_road_labels', 'night', 'grayscale_light', 'grayscale_dark', 'road_shaded_relief', 'high_contrast_light', 'high_contrast_dark']
+                }),
+                new atlas.control.TrafficControl()
+            ], {
+                position: 'top-right'
+            });
+
+
+            // Create a store locator instance
+            locator = new orderlocator(map, {
+                countrySet: ['PH'], // An array of country region ISO2 values to limit searches to
+                language: 'en-PH',  // Language in which search results should be returned.
+                rangeInKm: 5       // The radius in kilometers in which to search for stores.
+            });
+
+            // Show only stores in a specific country.
+            // locator.showStoresByCountry('PH');
+            locator.showNearbyStores();
+        });
+
+    </script>
+}

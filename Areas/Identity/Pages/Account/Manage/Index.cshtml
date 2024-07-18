@@ -1,0 +1,96 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+@* <h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+<div class="row">
+    <div class="col-md-6">
+        <form id="profile-form" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class="form-floating mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
+            </div>
+            <div class="form-floating mb-3">
+                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+        </form>
+    </div>
+</div> *@
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+     data-sidebar-position="fixed" data-header-position="fixed">
+    <div class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+        <div class="d-flex align-items-center justify-content-center w-100">
+            <form id="profile-form" method="post" enctype="multipart/form-data">
+                <div class="row justify-content-center w-100">
+                    <div class="col-md-6 col-lg-6 col-xxl-4">
+                        <div class="card mb-0">
+                            <div class="card-body">
+                                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Input.FirstName" class="form-label"></label>
+                                    <input asp-for="Input.FirstName" class="form-control w-100" />
+                                    <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Input.LastName" class="form-label"></label>
+                                    <input asp-for="Input.LastName" class="form-control w-100" />
+                                    <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Username" class="form-label">Username</label>
+                                    <input asp-for="Username" class="form-control" aria-required="true" placeholder="Username" />
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                                    <input asp-for="Input.PhoneNumber" class="form-control w-100" placeholder="Please enter your phone number." />
+                                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                                </div>
+                                <button id="update-profile-button" type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Update Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-6 col-xxl-7">
+                        <div class="card mb-0">
+                            <div class="card-body">
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                <div class="form-group">
+                                    <label asp-for="Input.ProfilePicture" style="width: 100%;"></label>
+                                    @if (Model.Input.ProfilePicture != null)
+                                    {
+                                        <img id="profilePicture" style="width:350px;height:350px; object-fit:cover" src="data:image/*;base64,@(Convert.ToBase64String(Model.Input.ProfilePicture))">
+                                    }
+                                    else
+                                    {
+                                        <img id="profilePicture" style="width:350px;height:350px; object-fit:cover" src="~/lib/modernize/images/profile/user-1.jpg" />
+                                    }
+                                    <input type="file"
+                                           accept=",.jpg,.jpeg,.gif,.tif"
+                                           asp-for="Input.ProfilePicture"
+                                           class="form-control"
+                                           style="border:0px!important;padding: 0px;padding-top: 10px;padding-bottom: 30px;"
+                                           onchange="document.getElementById('profilePicture').src = window.URL.createObjectURL(this.files[0])" />
+                                    <span asp-validation-for="Input.ProfilePicture" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

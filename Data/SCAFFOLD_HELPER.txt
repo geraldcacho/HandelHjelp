@@ -1,0 +1,2 @@
+Scaffold-DbContext "Server=tcp:handelhjelpdev.database.windows.net,1433;Initial Catalog=handelhjelpdev;Persist Security Info=False;User ID=handelhjelpdev;Password=l6Y0`$9`$3Cp1E;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=120;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Data/Models -Schema "hand"
+add-migration "Initialize new database" -OutputDir Data/Models/Migrations

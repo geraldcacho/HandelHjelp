@@ -1,0 +1,489 @@
+﻿@using System.Globalization;
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model EditOrderViewModel
+@{
+    Layout = "";
+
+    if (Model.IsNew)
+    {
+        ViewData["Title"] = "New Order";
+    }
+    else
+    {
+        ViewData["Title"] = "Edit Order ID:" + Model.Order.OrderId;
+    }
+
+    var longitude = Convert.ToString(Model.Order?.Longitude, CultureInfo.InvariantCulture);
+    var latitude = Convert.ToString(Model.Order?.Latitude, CultureInfo.InvariantCulture);
+}
+
+<!-- Azure Maps Map Control stylesheet -->
+<link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" crossorigin="anonymous">
+<div class="modal-backdrop fade in" style="height: 995px;"></div>
+<div class="modal-dialog modal-xl">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h6 class="modal-title fs-5" id="modalOrders">@ViewData["Title"]</h6>
+            <button type="button" class="btn-close" onclick="location.reload()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div id="alertPlaceholder"></div>
+            <div class="row">
+                <div class="col-6">
+
+                    <!-- General -->
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">Order Details</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="orderDetails" class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label asp-for="Order.OrderId" class="form-label">ID</label>
+                                    <input asp-for="Order.OrderId" type="text" class="form-control" disabled>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.ReceivedOn" class="form-label">Received on</label>
+                                    <input asp-for="Order.ReceivedOn" required type="datetime-local" class="form-control">
+                                    <span asp-validation-for="Order.ReceivedOn" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.StreetAddressLine1" class="form-label">Address</label>
+                                    <input asp-for="Order.StreetAddressLine1" type="text" class="form-control">
+                                    <span asp-validation-for="Order.StreetAddressLine1" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.City" class="form-label">City</label>
+                                    <input asp-for="Order.City" required type="text" class="form-control">
+                                    <span asp-validation-for="Order.City" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label asp-for="Order.PostalCode" class="form-label">Postcode</label>
+                                    <input asp-for="Order.PostalCode" type="text" class="form-control">
+                                    <span asp-validation-for="Order.PostalCode" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.CountryName" class="form-label">Country</label>
+                                    <select asp-for="Order.CountryName" required class="form-select">
+                                        <option>Choose...</option>
+                                        @foreach (var country in Model.Countries)
+                                        {
+                                            if (country.Code == Model.Order.CountryCode)
+                                            {
+                                                <option value="@country.Code" selected>@country.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@country.Code">@country.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Order.CountryName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.Longitude" class="form-label">Longitude</label>
+                                    <input asp-for="Order.Longitude" required type="number" class="form-control">
+                                    <span asp-validation-for="Order.Longitude" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.Latitude" class="form-label">Latitude</label>
+                                    <input asp-for="Order.Latitude" required type="number" class="form-control">
+                                    <span asp-validation-for="Order.Latitude" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Order.PhoneNumber" class="form-label">Phone number</label>
+                                    <input asp-for="Order.PhoneNumber" type="tel" class="form-control">
+                                    <span asp-validation-for="Order.PhoneNumber" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card mb-4 rounded-3 shadow-sm">
+                                        <div class="card-header py-3">
+                                            <h4 class="my-0 fw-normal">Types</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            @foreach (var self in Model.ProductTypes)
+                                            {
+                                                <ul class="list-group">
+                                                    @* <li class="list-group-item">
+                                                <strong>@feature.Name</strong>
+                                                </li> *@
+
+                                                    <li class="list-group-item">
+                                                        <input class="form-check-input" onchange="handleCheckboxChange(this)" value="@self.ProductTypeId" type="checkbox" @(Model.Order.OrderProductTypes.Any(productType => productType.ProductTypeId == self.ProductTypeId) ? "checked" : "") id="tag-@self.Code">
+                                                        <label class="form-check-label m-2" for="tag-@self.Code"> @self.Name</label>
+                                                    </li>
+                                                    @* @foreach (var tag in feature.Tags)
+                                                {
+                                                <li class="list-group-item">
+                                                <input class="form-check-input" onchange="handleCheckboxChange(this)" value="@tag.Id" type="checkbox" @(Model.Order.Features.Contains(tag.Id) ? "checked" : "") id="tag-@tag.Id">
+                                                <label class="form-check-label" for="tag-@tag.Id">@tag.Name</label>
+                                                </li>
+                                                } *@
+                                                </ul>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                @*
+                                <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                </div> *@
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+
+                    <!-- Location -->
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">Location</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <!-- Azure Maps Control -->
+                                    <div id="locator-map-modal" role="application" class="w-100 h-100 p-5 bg-body-tertiary border rounded-3 py-3" style="min-height: 300px;"></div>
+                                </div>
+                                <div class="col-12">
+                                    <button id="geocodeButton" class="btn btn-primary">Geocode from address</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">Product Image</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    @if (Model?.Order?.Image != null)
+                                    {
+                                        <img id="productImage" style="width:150px;height:150px; object-fit:cover" src="data:image/*;base64,@(Convert.ToBase64String(Model?.Order?.Image))">
+                                    }
+                                    else
+                                    {
+                                        <img id="productImage" style="width:150px;height:150px; object-fit:cover" src="~/lib/modernize/images/logos/image-here-icon.jpg" />
+                                    }
+
+                                    <input id="uploadProductImage" type="file"
+                                           accept=",.jpg,.jpeg,.gif,.tif"
+                                           asp-for="Order.Image"
+                                           class="form-control"
+                                           style="border:0px!important;padding: 0px;padding-top: 10px;padding-bottom: 30px;"
+                                           onchange="document.getElementById('productImage').src = window.URL.createObjectURL(this.files[0])" />
+                                    <span asp-validation-for="Order.Image" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Order.Note" class="form-label">Notes</label>
+                            <textarea asp-for="Order.Note" maxlength="30" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Order.Note" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="location.reload()">Close</button>
+            <button type="submit" form="orderDetails" class="btn btn-primary">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- Azure Maps Map Control script -->
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+
+<script>
+    let mapModal, marker;
+
+    var productTypes = [@Html.Raw(string.Join(", ", Model.Order?.OrderProductTypes?.Select(type => type.ProductTypeId)))];
+
+    function handleCheckboxChange(checkbox) {
+        if (checkbox.checked) {
+            productTypes.push(checkbox.value);
+        } else {
+            var index = productTypes.indexOf(checkbox.value);
+
+            if (index !== -1) {
+                productTypes.splice(index, 1);
+            }
+        }
+    }
+
+    @if (!Model.IsNew)
+    {
+        @Html.Raw("$('#Order_OrderId').prop('disabled', true); ")
+        ;
+        @Html.Raw("$('#Order_CountryName').prop('disabled', true); ")
+        ;
+    }
+
+                                                                    const alertPlaceholder = $('#alertPlaceholder');
+
+    // Show an alert on the page.
+    function appendAlert(message, type) {
+        alertPlaceholder.append(`<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`);
+    }
+
+    $('#Order_CountryName').change(function () {
+        var selectedCountry = $(this).val();
+        console.log('Changed to', selectedCountry);
+
+        $.ajax({
+            url: '/api/orders/defaultlocation?id=' + selectedCountry,
+            type: 'GET',
+            success: function (country) {
+
+                var coordinates = [parseFloat(country.longitude), parseFloat(country.latitude)];
+
+                $('#Order_Longitude').val(country.longitude);
+                $('#Order_Latitude').val(country.latitude);
+
+                // Update the marker on the map
+                marker.setOptions({
+                    position: coordinates
+                });
+
+                // Center the map on the marker
+                mapModal.setCamera({
+                    center: coordinates,
+                    zoom: 13
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log("Country not found:", error);
+            }
+        });
+
+    });
+
+    // Geocode button click
+    $('#geocodeButton').click(async (event) => {
+        const address = $('#Order_StreetAddressLine1').val();
+        const city = $('#Order_City').val();
+        const postalcode = $('#Order_PostalCode').val();
+        const country = $('#Order_CountryName option:selected').text();
+        if (address && city && country) {
+            const requestUrl = `https://{azMapsDomain}/geocode?api-version=2023-06-01&query=${address}, ${city}, ${postalcode}, ${country}&subscription-key=KJtvYv_27lQIaLVDjfRpzd-P7fDJ4HV1uLxRLOO7WvE`;
+            const response = await this.processRequest(requestUrl);
+
+            if (response && response.features) {
+                // We only take the first geocoded address coordinates.
+                var coordinates = response.features[0].geometry.coordinates;
+
+                // Order the coordinates in the form
+                $('#Order_Longitude').val(coordinates[0]);
+                $('#Order_Latitude').val(coordinates[1]);
+
+                // Update the marker on the map
+                marker.setOptions({
+                    position: coordinates
+                });
+
+                // Center the map on the marker
+                mapModal.setCamera({
+                    center: coordinates,
+                    zoom: 13
+                });
+            } else {
+                appendAlert('Apologies, we were unable to perform geocoding for the provided address details.', 'danger');
+            }
+        } else {
+            appendAlert('Please provide the address details before we can proceed with geocoding.', 'warning');
+        }
+    });
+
+    function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]); // Extract Base64 data from Data URL
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Save button click.
+    $('#orderDetails').submit(async event => {
+        event.preventDefault();
+
+        const currentDate = new Date();
+        var userId = "@UserManager.GetUserAsync(User).Result.Id";
+        const jsonObject = {
+            "OrderId": $('#Order_OrderId').val(),
+            "CustomerId": userId,
+            "City": $('#Order_City').val(),
+            // "Country": "USA",
+            // "TotalAmount": 100.00,
+            "StreetAddressLine1": $('#Order_StreetAddressLine1').val(),
+            "PostalCode": $('#Order_PostalCode').val(),
+            "CountryName": $('#Order_CountryName option:selected').text(),
+            "CountryCode": $('#Order_CountryName').val(),
+            "Longitude": $('#Order_Longitude').val(),
+            "Latitude": $('#Order_Latitude').val(),
+            "PhoneNumber": $('#Order_PhoneNumber').val(),
+            "ReceivedOn": $('#Order_ReceivedOn').val(),
+            "Note": $('#Order_Note').val(),
+            "CreatedDate": currentDate.toISOString(),
+            "CreatedBy": userId,
+            // "UpdatedDate": null,
+            // "UpdatedBy": null,
+            "OrderProductTypes": [
+                // { ProductTypeId: 1, CreatedDate: "2024-06-01T08:00:00" }
+                // { ProductTypeId: 1 }
+                // { OrderId: '221564070', ProductTypeId: 1, CreatedDate: "2024-06-01T08:00:00", CreatedBy: userId }
+            ]
+        }
+
+        if ($('#Order_ReceivedOn').val() === ''
+            || $('#Order_Longitude').val() < 1
+            || $('#Order_Latitude').val() < 1) {
+            return false;
+        }
+
+        // Assuming you have an array of IDs called 'idList'
+        // const idList = [1, 2, 3, 4, 5]; // Example array of IDs
+
+        // Create an array to store the OrderProductType objects
+        // const orderProductTypes = [];
+
+        // Loop through the idList array
+        // idList.forEach(id => {
+        // Create a new OrderProductType object for each ID
+        // const orderProductType = {
+        //     OrderId: $('#Order_OrderId').val(), // Set the OrderId property to the desired value
+        //     ProductTypeId: id, // Set the ProductTypeId property to the current ID from the array
+        //     CreatedDate: currentDate.toISOString(), // Set the CreatedDate property to the current date and time
+        //     CreatedBy: userId, // Set the CreatedBy property to the desired value
+        // };
+
+        // Push the created OrderProductType object to the array
+        // jsonObject.OrderProductTypes.push(orderProductType);
+        // });
+
+        // If there's a file selected, read its content and include it in the JSON object
+        const fileInput = document.getElementById('uploadProductImage');
+
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileContent = await readFileAsBase64(file);
+            jsonObject.Image = fileContent;
+        }
+
+        // Save Order details
+        $.ajax({
+            type: '@(Model.IsNew ? "POST" : "PUT")',
+            url: '/api/orders',
+            contentType: 'application/json',
+            data: JSON.stringify(jsonObject),
+            success: () => {
+                appendAlert('Store details saved successfully.', 'success');
+                location.reload();
+            },
+            error: e => {
+                if (e.responseJSON && e.responseJSON.errors) {
+                    const errors = e.responseJSON.errors;
+                    for (const key in errors) {
+                        if (errors.hasOwnProperty(key)) {
+                            errors[key].forEach(errorMessage => appendAlert(`Validation Error: ${errorMessage}`, 'danger'));
+                        }
+                    }
+                } else {
+                    appendAlert('Failed to save Order details, please try again!', 'danger');
+                }
+            }
+        });
+    });
+
+    if (mapModal == null) {
+        // Initialize an Azure Maps instance
+        mapModal = new atlas.Map('locator-map-modal', {
+            zoom: 13,
+            center: [@longitude, @latitude],
+            style: 'grayscale_light',
+            view: 'Auto',
+
+            // Add authentication details for connecting to Azure Maps
+            authType: 'subscriptionKey',
+            subscriptionKey: 'KJtvYv_27lQIaLVDjfRpzd-P7fDJ4HV1uLxRLOO7WvE'
+        });
+
+        // Wait until the map resources are ready.
+        mapModal.events.add('ready', () => {
+            // Add controls to the map.
+            mapModal.controls.add([
+                new atlas.control.ZoomControl(),
+                new atlas.control.StyleControl({
+                    mapStyles: ['road', 'satellite', 'satellite_road_labels', 'night', 'grayscale_light', 'grayscale_dark', 'road_shaded_relief', 'high_contrast_light', 'high_contrast_dark']
+                }),
+                new atlas.control.TrafficControl()
+            ], {
+                position: 'top-right'
+            });
+
+            // Create a draggable HTML marker.
+            marker = new atlas.HtmlMarker({
+                draggable: true,
+                color: 'Red',
+                position: [@longitude, @latitude]
+            });
+
+            // Add a drag event to get the position of the marker.
+            // Markers support drag, dragstart and dragend events.
+            mapModal.events.add('drag', marker, function () {
+                var pos = marker.getOptions().position;
+
+                // Round longitude,latitude values to 5 decimal places.
+                $('#Order_Longitude').val(Math.round(pos[0] * 100000) / 100000);
+                $('#Order_Latitude').val(Math.round(pos[1] * 100000) / 100000);
+            });
+
+            // Add the marker to the map.
+            mapModal.markers.add(marker);
+        });
+    }
+
+    // This is a reusable function that sets the Azure Maps platform domain,
+    // signs the request, and makes use of any transformRequest set on the map.
+    async function processRequest(url) {
+        // Replace the domain placeholder to ensure the same Azure Maps is used throughout the app.
+        url = url.replace('{azMapsDomain}', atlas.getDomain());
+
+        // Get the authentication details from the map for use in the request.
+        var requestParams = mapModal.authentication.signRequest({ url: url });
+
+        // Transform the request.
+        var transform = mapModal.getServiceOptions().tranformRequest;
+        if (transform) requestParams = transform(url);
+
+        const response = await fetch(requestParams.url, {
+            method: 'GET',
+            mode: 'cors',
+            headers: new Headers(requestParams.headers)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
+</script>
